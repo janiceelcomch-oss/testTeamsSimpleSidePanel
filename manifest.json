@@ -26,7 +26,7 @@
     {
       "entityId": "SimpleCallPanelSidePanel",
       "name": "Call Info",
-      "contentUrl": "https://zodiac-stiffly-unsubtle.ngrok-free.dev/sidepanel.html",
+      "contentUrl": "https://janiceelcomch-oss.github.io/testTeamsSimpleSidePanel/index.html",
       "scopes": ["personal"],
       "context": ["meetingSidePanel"]
     }
