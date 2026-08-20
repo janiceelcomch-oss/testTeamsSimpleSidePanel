@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Sidepanel</title>
+    <!-- Include Teams SDK -->
+    <script src="https://res.cdn.office.net/teams-js/v2.0.0/js/MicrosoftTeams.min.js"></script>
+</head>
+<body>
+    <div>
+        <h3>Caller: <span id="callerIdentity">Unknown</span></h3>
+        <p>Type: <span id="meetingId">Loading...</span></p>
+        <p>Resolved Name: <b id="resolvedName">Searching...</b></p>
+        <p>Status: <i id="statusMessage">Initializing...</i></p>
+    </div>
+
+    <script>
+        const RESOLVE_NAME_ENDPOINT = "https://zodiac-stiffly-unsubtle.ngrok-free.dev/api/ResolveCallerName";
+
+        // Wait for DOM to load before touching elements
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const callerId = urlParams.get('caller') || urlParams.get('phone');
+
+            if (callerId) {
+                document.getElementById('callerIdentity').innerText = callerId;
+                document.getElementById('meetingId').innerText = "Direct Call / Pop-out";
+                resolveCallerName(callerId);
+            } else {
+                document.getElementById('statusMessage').innerText = "No caller ID provided in URL.";
+            }
+
+            // Teams SDK Initialization
+            if (window.parent !== window && typeof microsoftTeams !== 'undefined') {
+                microsoftTeams.app.initialize().then(() => {
+                    document.getElementById('statusMessage').innerText = "Running inside Teams.";
+                }).catch((err) => {
+                    console.warn("Teams SDK Init Error:", err);
+                    document.getElementById('statusMessage').innerText = "Standalone Mode (Init Failed).";
+                });
+            } else {
+                document.getElementById('statusMessage').innerText = "Standalone Browser Mode.";
+            }
+        });
+
+        async function resolveCallerName(callerId) {
+            document.getElementById('statusMessage').innerText = "Calling lookup endpoint...";
+            try {
+                const response = await fetch(RESOLVE_NAME_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        // Bypasses the ngrok warning page that triggers the CSP error
+                        'ngrok-skip-browser-warning': 'true' 
+                    },
+                    body: JSON.stringify({ callerId: callerId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('resolvedName').innerText = data.resolvedName || "No match found";
+                    document.getElementById('statusMessage').innerText = "Ready.";
+                } else {
+                    document.getElementById('resolvedName').innerText = "Lookup failed";
+                    document.getElementById('statusMessage').innerText = `Server status ${response.status}`;
+                }
+            } catch (err) {
+                console.error("Lookup error:", err);
+                document.getElementById('resolvedName').innerText = "Error connecting to service";
+                document.getElementById('statusMessage').innerText = "Backend lookup unavailable.";
+            }
+        }
+    </script>
+</body>
+</html>
