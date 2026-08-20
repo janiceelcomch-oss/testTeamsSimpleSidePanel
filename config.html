@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://res.cdn.office.net/teams-js/v2.19.0/js/MicrosoftTeams.min.js"></script>
+</head>
+<body>
+    <p>Click <b>Save</b> to add the Call Panel to your meeting.</p>
+    <script>
+        microsoftTeams.app.initialize().then(() => {
+            // Tell Teams the configuration is valid so the Save button becomes clickable
+            microsoftTeams.pages.config.setValidityState(true);
+
+            // Define where the tab should point when saved
+            microsoftTeams.pages.config.registerOnSaveHandler((saveEvent) => {
+                microsoftTeams.pages.config.setConfig({
+                    entityId: "SimpleCallPanel",
+                    contentUrl: "https://zodiac-stiffly-unsubtle.ngrok-free.dev/sidepanel.html",
+                    suggestedDisplayName: "Call Info"
+                });
+                saveEvent.notifySuccess();
+            });
+        });
+    </script>
+</body>
+</html>
